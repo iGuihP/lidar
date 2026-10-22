@@ -45,6 +45,6 @@ project.yml                  definição do projeto Xcode (XcodeGen)
 | 3. Persistência | escrito; storage testado | storage ✅ / UI ❌ |
 | 4. Editor | escrito; lógica testada | lógica ✅ / UI ❌ |
 | 5. Exportação JSON/SVG | escrito; testado | ✅ (fixture sintética) |
-| 6. Vários ambientes | não iniciada | — |
+| 6. Vários ambientes | investigação documental em `docs/MULTI_ROOM.md`; não implementada | — |
 
 Detalhes e roteiro de teste em [`docs/VALIDATION.md`](docs/VALIDATION.md).
