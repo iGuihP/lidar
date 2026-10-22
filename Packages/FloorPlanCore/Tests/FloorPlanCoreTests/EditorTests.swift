@@ -161,3 +161,19 @@ final class EditorTests: XCTestCase {
         XCTAssertEqual(editor.plan.rooms[0].area, 15, accuracy: 1e-6)
     }
 }
+
+final class GeometryHelperTests: XCTestCase {
+    func testCentroidContainsAndSwingNormal() throws {
+        let square = [Point2D(x: 0, y: 0), Point2D(x: 4, y: 0), Point2D(x: 4, y: 2), Point2D(x: 0, y: 2)]
+        XCTAssertEqual(Geometry.centroid(square).x, 2, accuracy: 1e-9)
+        XCTAssertEqual(Geometry.centroid(square).y, 1, accuracy: 1e-9)
+        XCTAssertTrue(Geometry.contains(square, Point2D(x: 1, y: 1)))
+        XCTAssertFalse(Geometry.contains(square, Point2D(x: 5, y: 1)))
+
+        let plan = Fixtures.project().original
+        let door = try XCTUnwrap(plan.openings.first { $0.kind == .door })
+        let n = try XCTUnwrap(plan.swingNormal(for: door))
+        // Porta na parede sul (y=3): o giro aponta para dentro da sala, ou seja, y negativo.
+        XCTAssertLessThan(n.y, -0.99)
+    }
+}

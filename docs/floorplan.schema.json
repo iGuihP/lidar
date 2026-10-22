@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/ios-floorplan-scanner.plan/1.json",
+  "title": "ios-floorplan-scanner.plan (schemaVersion 1)",
+  "type": "object",
+  "required": ["format", "schemaVersion", "exportedAt", "project", "units", "coordinateSystem",
+               "captures", "hasUserEdits", "disclaimer", "edited"],
+  "additionalProperties": true,
+  "properties": {
+    "format": { "const": "ios-floorplan-scanner.plan" },
+    "schemaVersion": { "const": 1 },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "capturedAt", "updatedAt"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "units": { "const": "meters" },
+    "coordinateSystem": {
+      "type": "object",
+      "required": ["name", "origin", "xAxis", "yAxis", "view"],
+      "properties": {
+        "name": { "const": "floorplan-topdown-v1" },
+        "origin": { "type": "string" },
+        "xAxis": { "type": "string" },
+        "yAxis": { "type": "string" },
+        "view": { "type": "string" }
+      }
+    },
+    "captures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "capturedAt", "device", "roomPlanVersion"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "capturedAt": { "type": "string", "format": "date-time" },
+          "roomPlanVersion": { "type": "integer" },
+          "device": {
+            "type": "object",
+            "required": ["deviceModel", "systemName", "systemVersion", "appVersion", "lidarSupported"],
+            "properties": {
+              "deviceModel": { "type": "string" },
+              "systemName": { "type": "string" },
+              "systemVersion": { "type": "string" },
+              "appVersion": { "type": "string" },
+              "lidarSupported": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "hasUserEdits": { "type": "boolean" },
+    "disclaimer": { "type": "string" },
+    "edited": { "$ref": "#/$defs/plan" },
+    "original": { "$ref": "#/$defs/plan" }
+  },
+  "$defs": {
+    "uuid": { "type": "string", "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$" },
+    "point": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
+    },
+    "plan": {
+      "type": "object",
+      "required": ["walls", "openings", "rooms", "issues"],
+      "properties": {
+        "bounds": {
+          "type": "object",
+          "required": ["min", "max"],
+          "properties": { "min": { "$ref": "#/$defs/point" }, "max": { "$ref": "#/$defs/point" } }
+        },
+        "walls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "start", "end", "lengthMeters", "thicknessMeters", "thicknessIsEstimated", "origin"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uuid" },
+              "start": { "$ref": "#/$defs/point" },
+              "end": { "$ref": "#/$defs/point" },
+              "lengthMeters": { "type": "number", "minimum": 0 },
+              "thicknessMeters": { "type": "number", "exclusiveMinimum": 0 },
+              "thicknessIsEstimated": { "type": "boolean" },
+              "heightMeters": { "type": "number" },
+              "origin": { "enum": ["captured", "userAdded"] }
+            }
+          }
+        },
+        "openings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "wallId", "offsetMeters", "widthMeters", "heightMeters", "sillHeightMeters", "center"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uuid" },
+              "kind": { "enum": ["door", "window", "opening"] },
+              "wallId": { "$ref": "#/$defs/uuid" },
+              "offsetMeters": { "type": "number", "minimum": 0 },
+              "widthMeters": { "type": "number", "exclusiveMinimum": 0 },
+              "heightMeters": { "type": "number" },
+              "sillHeightMeters": { "type": "number", "minimum": 0 },
+              "isOpen": { "type": "boolean" },
+              "center": { "$ref": "#/$defs/point" }
+            }
+          }
+        },
+        "rooms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "areaSquareMeters", "outline", "wallIds"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uuid" },
+              "name": { "type": "string" },
+              "areaSquareMeters": { "type": "number", "minimum": 0 },
+              "outline": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/point" } },
+              "wallIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } }
+            }
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "severity", "targetIds"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uuid" },
+              "kind": { "enum": ["lowConfidence", "incompleteEdges", "curvedWall", "openCorner", "orphanOpening",
+                                 "openRoomOutline", "shortWall", "invalidSurface", "noWalls"] },
+              "severity": { "enum": ["info", "warning"] },
+              "targetIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } },
+              "location": { "$ref": "#/$defs/point" },
+              "value": { "type": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

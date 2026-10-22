@@ -81,6 +81,7 @@ public struct Room: Codable, Equatable, Identifiable, Sendable {
 
     /// Área em m² (valor absoluto do polígono).
     public var area: Double { abs(Geometry.signedArea(outline)) }
+    public var centroid: Point2D { Geometry.centroid(outline) }
 }
 
 /// Ponto da planta que precisa de conferência manual.
@@ -136,6 +137,16 @@ public struct FloorPlan: Codable, Equatable, Sendable {
         }
         for r in rooms { pts += r.outline }
         return Bounds2D(points: pts)
+    }
+
+    /// Normal da parede que aponta para o ambiente mais próximo da abertura. Usada para desenhar
+    /// o giro das portas "para dentro" (o sentido real de abertura não é capturado pelo RoomPlan).
+    public func swingNormal(for opening: Opening) -> Point2D? {
+        guard let wall = wall(opening.wallID) else { return nil }
+        let c = wall.point(atOffset: opening.offset)
+        let n = wall.direction.perpendicular
+        guard let room = rooms.min(by: { $0.centroid.distance(to: c) < $1.centroid.distance(to: c) }) else { return n }
+        return (room.centroid - c).dot(n) < 0 ? n * -1 : n
     }
 
     /// Parede mais próxima de um ponto, dentro de `tolerance` metros (considera a meia-espessura).

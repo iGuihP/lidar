@@ -120,26 +120,35 @@ public enum FloorPlanExporter {
         try FloorPlanCoding.encoder().encode(exportDocument(project, includeOriginal: includeOriginal, now: now))
     }
 
+    /// Arredonda para 0,1 mm: remove ruído de ponto flutuante (ex.: `-8e-17`) do formato de saída.
+    private static func r(_ v: Double) -> Double {
+        let x = (v * 10_000).rounded() / 10_000
+        return x == 0 ? 0 : x
+    }
+
+    private static func r(_ p: Point2D) -> Point2D { Point2D(x: r(p.x), y: r(p.y)) }
+
     private static func planExport(_ plan: FloorPlan) -> FloorPlanExport.PlanExport {
         .init(
-            bounds: plan.bounds,
+            bounds: plan.bounds.map { Bounds2D(min: r($0.min), max: r($0.max)) },
             walls: plan.walls.map {
-                .init(id: $0.id, start: $0.start, end: $0.end, lengthMeters: $0.length,
-                      thicknessMeters: $0.thickness, thicknessIsEstimated: true,
-                      heightMeters: $0.height, origin: $0.origin.rawValue)
+                .init(id: $0.id, start: r($0.start), end: r($0.end), lengthMeters: r($0.length),
+                      thicknessMeters: r($0.thickness), thicknessIsEstimated: true,
+                      heightMeters: $0.height.map(r), origin: $0.origin.rawValue)
             },
             openings: plan.openings.compactMap { o in
                 guard let w = plan.wall(o.wallID) else { return nil }
-                return .init(id: o.id, kind: o.kind.rawValue, wallId: o.wallID, offsetMeters: o.offset,
-                             widthMeters: o.width, heightMeters: o.height, sillHeightMeters: o.sillHeight,
-                             isOpen: o.isOpen, center: w.point(atOffset: o.offset))
+                return .init(id: o.id, kind: o.kind.rawValue, wallId: o.wallID, offsetMeters: r(o.offset),
+                             widthMeters: r(o.width), heightMeters: r(o.height), sillHeightMeters: r(o.sillHeight),
+                             isOpen: o.isOpen, center: r(w.point(atOffset: o.offset)))
             },
             rooms: plan.rooms.map {
-                .init(id: $0.id, name: $0.name, areaSquareMeters: $0.area, outline: $0.outline, wallIds: $0.wallIDs)
+                .init(id: $0.id, name: $0.name, areaSquareMeters: r($0.area), outline: $0.outline.map(r),
+                      wallIds: $0.wallIDs)
             },
             issues: plan.issues.map {
                 .init(id: $0.id, kind: $0.kind.rawValue, severity: $0.severity.rawValue,
-                      targetIds: $0.targetIDs, location: $0.location, value: $0.value)
+                      targetIds: $0.targetIDs, location: $0.location.map(r), value: $0.value.map(r))
             })
     }
 
@@ -237,11 +246,7 @@ public enum FloorPlanExporter {
             case .door:
                 // Esquema de porta: folha a 90° e arco de giro, abrindo para o lado do ambiente mais
                 // próximo (o sentido real de abertura não é capturado pelo RoomPlan).
-                var side = n
-                if let room = plan.rooms.min(by: { centroid($0.outline).distance(to: c) < centroid($1.outline).distance(to: c) }),
-                   (centroid(room.outline) - c).dot(n) < 0 {
-                    side = n * -1
-                }
+                let side = plan.swingNormal(for: o) ?? n
                 let leafEnd = a + side * o.width
                 let sweep = side.cross(d) > 0 ? 1 : 0
                 out += "<line x1=\"\(cm(a.x))\" y1=\"\(cm(a.y))\" x2=\"\(cm(leafEnd.x))\" y2=\"\(cm(leafEnd.y))\"/>\n"
@@ -284,7 +289,7 @@ public enum FloorPlanExporter {
         if options.showRoomLabels {
             out += "<g id=\"labels\" text-anchor=\"middle\" fill=\"#111111\">\n"
             for r in plan.rooms where r.outline.count >= 3 {
-                let c = centroid(r.outline)
+                let c = r.centroid
                 out += "<text x=\"\(cm(c.x))\" y=\"\(cm(c.y))\" font-size=\"22\" font-weight=\"bold\">\(escape(r.name))</text>\n"
                 out += "<text x=\"\(cm(c.x))\" y=\"\(fmt(c.y * 100 + 24))\" font-size=\"16\">\(fmt(r.area, digits: 2)) m²</text>\n"
             }
@@ -338,19 +343,6 @@ public enum FloorPlanExporter {
         let n = d.perpendicular
         let hl = length / 2, ha = across / 2
         return [c - d * hl - n * ha, c + d * hl - n * ha, c + d * hl + n * ha, c - d * hl + n * ha]
-    }
-
-    private static func centroid(_ poly: [Point2D]) -> Point2D {
-        let a = Geometry.signedArea(poly)
-        guard abs(a) > 1e-9 else { return Bounds2D(points: poly)?.center ?? .zero }
-        var cx = 0.0, cy = 0.0
-        for i in poly.indices {
-            let p = poly[i], q = poly[(i + 1) % poly.count]
-            let f = p.x * q.y - q.x * p.y
-            cx += (p.x + q.x) * f
-            cy += (p.y + q.y) * f
-        }
-        return Point2D(x: cx / (6 * a), y: cy / (6 * a))
     }
 
     /// Formato numérico independente de locale.

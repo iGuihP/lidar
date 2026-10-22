@@ -1,0 +1,38 @@
+# Gera FloorPlanScanner.xcodeproj com XcodeGen:  brew install xcodegen && xcodegen generate
+name: FloorPlanScanner
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+packages:
+  FloorPlanCore:
+    path: Packages/FloorPlanCore
+targets:
+  FloorPlanScanner:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    dependencies:
+      - package: FloorPlanCore
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Floor Plan Scanner
+        NSCameraUsageDescription: >-
+          A câmera e o sensor LiDAR são usados para escanear o ambiente e gerar a planta baixa.
+          As capturas ficam somente neste aparelho.
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.floorplanscanner
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_STYLE: Automatic

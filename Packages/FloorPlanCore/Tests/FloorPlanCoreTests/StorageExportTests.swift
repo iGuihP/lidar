@@ -161,6 +161,13 @@ final class ExporterTests: XCTestCase {
         try FloorPlanExporter.svg(Fixtures.project(), options: o).write(toFile: path, atomically: true, encoding: .utf8)
     }
 
+    /// Com `FP_JSON_OUT=/caminho/arquivo.json` grava a exportação JSON da fixture (usada para validar o JSON Schema).
+    func testWriteSampleJSONWhenRequested() throws {
+        guard let path = ProcessInfo.processInfo.environment["FP_JSON_OUT"] else { return }
+        try FloorPlanExporter.json(Fixtures.project(), now: Date(timeIntervalSince1970: 1_700_000_200))
+            .write(to: URL(fileURLWithPath: path))
+    }
+
     func testSVGOfEmptyPlanDoesNotCrash() {
         let svg = FloorPlanExporter.svg(plan: FloorPlan(), title: "vazio")
         XCTAssertTrue(XMLParser(data: Data(svg.utf8)).parse())

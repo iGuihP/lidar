@@ -100,6 +100,33 @@ public enum Geometry {
         return sum / 2
     }
 
+    /// Centroide de um polígono (cai no centro do retângulo envolvente se a área for ~0).
+    public static func centroid(_ poly: [Point2D]) -> Point2D {
+        let a = signedArea(poly)
+        guard abs(a) > 1e-9 else { return Bounds2D(points: poly)?.center ?? .zero }
+        var cx = 0.0, cy = 0.0
+        for i in poly.indices {
+            let p = poly[i], q = poly[(i + 1) % poly.count]
+            let f = p.x * q.y - q.x * p.y
+            cx += (p.x + q.x) * f
+            cy += (p.y + q.y) * f
+        }
+        return Point2D(x: cx / (6 * a), y: cy / (6 * a))
+    }
+
+    /// Ponto dentro do polígono (regra par-ímpar).
+    public static func contains(_ poly: [Point2D], _ p: Point2D) -> Bool {
+        guard poly.count >= 3 else { return false }
+        var inside = false
+        var j = poly.count - 1
+        for i in poly.indices {
+            let a = poly[i], b = poly[j]
+            if (a.y > p.y) != (b.y > p.y), p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x { inside.toggle() }
+            j = i
+        }
+        return inside
+    }
+
     /// Distância de um ponto a um segmento e o parâmetro (0...1) do ponto mais próximo.
     public static func distance(from p: Point2D, toSegment a: Point2D, _ b: Point2D) -> (distance: Double, t: Double) {
         let ab = b - a
