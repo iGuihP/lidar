@@ -32,7 +32,7 @@ swift test --package-path Packages/FloorPlanCore
 ```
 App/                         SwiftUI + RoomPlan (captura, canvas 2D, editor, lista, inspetor)
 Packages/FloorPlanCore/      Normalizer, Generator, Editor, Storage, Exporter (só Foundation; testado em Linux)
-docs/                        SCHEMA.md, floorplan.schema.json, ARCHITECTURE.md, VALIDATION.md
+docs/                        SCHEMA.md, floorplan.schema.json, ARCHITECTURE.md, VALIDATION.md, GITHUB_BUILD.md, MULTI_ROOM.md
 project.yml                  definição do projeto Xcode (XcodeGen)
 ```
 
@@ -47,4 +47,4 @@ project.yml                  definição do projeto Xcode (XcodeGen)
 | 5. Exportação JSON/SVG | escrito; testado | ✅ (fixture sintética) |
 | 6. Vários ambientes | investigação documental em `docs/MULTI_ROOM.md`; não implementada | — |
 
-Detalhes e roteiro de teste em [`docs/VALIDATION.md`](docs/VALIDATION.md).
+Detalhes e roteiro de teste em [`docs/VALIDATION.md`](docs/VALIDATION.md). Compilar pelo GitHub: [`docs/GITHUB_BUILD.md`](docs/GITHUB_BUILD.md).
