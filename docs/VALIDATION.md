@@ -9,7 +9,7 @@ Este arquivo separa o que foi **efetivamente validado** do que ainda **não foi*
 | Normalização 3D→2D, geração de planta, editor, storage, exportação (JSON/SVG) | 37 testes unitários (`swift test`) em Linux, fixtures **sintéticas** | ✅ validado |
 | JSON exportado conforme `floorplan.schema.json` | Validado com `jsonschema` (Python) sobre exportação gerada pelo código; schema rejeita valor inválido | ✅ validado |
 | SVG bem formado e legível | Parse XML nos testes + renderização no Chromium inspecionada visualmente (fixture sintética) | ✅ validado |
-| Compilação da camada do app (SwiftUI/RoomPlan/ARKit) | Escrita **sem compilador Apple disponível**; assinaturas conferidas na documentação da Apple | ⚠️ **não compilada** |
+| Compilação da camada do app (SwiftUI/RoomPlan/ARKit) | GitHub Actions, macOS, Xcode 26.6 / SDK iOS 26.5: `xcodebuild build` para iOS Simulator terminou com `** BUILD SUCCEEDED **` (execução do `ci.yml` em 22/10/2026, commit `9dafb33`). Só prova que **compila**; não é execução | ✅ compila (⚠️ nunca executada) |
 | Captura com RoomPlan (Fase 1) | — | ❌ **não validada em dispositivo** |
 | Conversão `CapturedRoom` → snapshot com dados reais | — | ❌ não validada |
 | Planta gerada de uma captura real (cantos, portas, janelas) | — | ❌ não validada |

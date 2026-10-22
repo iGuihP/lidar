@@ -40,7 +40,7 @@ project.yml                  definição do projeto Xcode (XcodeGen)
 
 | Fase | Código | Validado |
 |---|---|---|
-| 1. Prova de conceito (captura + dados brutos) | escrito (`App/Capture`, *Dados da captura*) | ❌ aguarda teste no iPhone |
+| 1. Prova de conceito (captura + dados brutos) | escrito (`App/Capture`, *Dados da captura*); compila no CI | ❌ aguarda teste no iPhone |
 | 2. Planta 2D | escrito; núcleo testado | núcleo ✅ / UI ❌ |
 | 3. Persistência | escrito; storage testado | storage ✅ / UI ❌ |
 | 4. Editor | escrito; lógica testada | lógica ✅ / UI ❌ |
